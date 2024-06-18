@@ -363,15 +363,16 @@ SERUM_API bool Serum_LoadFile(const char* const filename, int* pwidth, int* phei
 
     // extract file if it is compressed
     if (!uncompressedCROM) {
-        char cromname[pathbuflen];
-#if !(defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV)))
-        if (strcpy_s(pathbuf, pathbuflen, filename)) return false;
-#else
-        if (strcpy_s(pathbuf, pathbuflen, getenv("TMPDIR"))) return false;
-        if (strcat_s(pathbuf, pathbuflen, "/")) return false;
-#endif
-        if (!unzip_crz(filename, pathbuf, cromname, pathbuflen)) return false;
-        if (strcat_s(pathbuf, pathbuflen, cromname)) return false;
+       char* tmpdir = getenv("TMPDIR");
+       if (tmpdir) {
+           if (strcpy_s(pathbuf, pathbuflen, tmpdir)) return false;
+           if (strcat_s(pathbuf, pathbuflen, "/")) return false;
+       }
+       else if (strcpy_s(pathbuf, pathbuflen, filename)) return false;
+
+       char cromname[pathbuflen];
+       if (!unzip_crz(filename, pathbuf, cromname, pathbuflen)) return false;
+       if (strcat_s(pathbuf, pathbuflen, cromname)) return false;
     }
 
     // Open cRom
